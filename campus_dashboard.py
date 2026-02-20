@@ -50,10 +50,10 @@ def generate_10year_shimla_data():
     """Generate realistic 10-year historical data for Shimla"""
     
     # Generate last 10 years of data dynamically (always up to current year)
-end_date = datetime.now()
-start_date = datetime(end_date.year - 10, 1, 1)  # Start from Jan 1, 10 years ago
-total_days = (end_date - start_date).days + 1  # Include today
-dates = [start_date + timedelta(days=i) for i in range(total_days)]
+    end_date = datetime.now()
+    start_date = datetime(end_date.year - 10, 1, 1)  # Start from Jan 1, 10 years ago
+    total_days = (end_date - start_date).days + 1  # Include today
+    dates = [start_date + timedelta(days=i) for i in range(total_days)]
     
     data = {
         'date': dates,
@@ -104,7 +104,7 @@ dates = [start_date + timedelta(days=i) for i in range(total_days)]
             base_aqi = 55
         
         # Add yearly variation (some years are hotter, colder, etc)
-        year_factor = 1 + ((year - 2014) * 0.02)  # Slight warming trend
+        year_factor = 1 + ((year - start_date.year) * 0.02)  # Slight warming trend
         
         # Add random variation
         temp = base_temp * year_factor + random.uniform(-4, 4)
@@ -115,7 +115,7 @@ dates = [start_date + timedelta(days=i) for i in range(total_days)]
         solar = sun_hours * 180 * random.uniform(0.8, 1.3)
         
         humidity = min(100, max(20, base_humidity + random.uniform(-15, 15)))
-        aqi = max(25, min(250, base_aqi + random.uniform(-25, 25) + (year-2014)*2))
+        aqi = max(25, min(250, base_aqi + random.uniform(-25, 25) + (year-start_date.year)*2))
         
         # Store values
         data['season'].append(season)
