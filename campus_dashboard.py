@@ -457,6 +457,7 @@ else:  # Live Simulation mode
     st.plotly_chart(fig_live, use_container_width=True)
 
 # Footer
+# Footer
 st.markdown("---")
 st.markdown(
     """
@@ -465,5 +466,5 @@ st.markdown(
         Data includes temperature, rainfall, solar energy, and air quality patterns
     </div>
     """,
-)
     unsafe_allow_html=True
+)
