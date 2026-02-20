@@ -149,12 +149,12 @@ with st.sidebar:
         st.subheader("Filter Data")
         
         # Year range selector
-years = sorted(df['year'].unique())
-start_year, end_year = st.select_slider(
-    "Select Year Range",
-    options=years,
-    value=(years[0], years[-1])  # Automatically uses first and last year
-)
+        years = sorted(df['year'].unique())
+        start_year, end_year = st.select_slider(
+            "Select Year Range",
+            options=years,
+            value=(years[0], years[-1])
+        )
         
         # Season selector
         seasons = ['All'] + list(df['season'].unique())
