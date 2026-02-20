@@ -49,8 +49,11 @@ st.markdown('<h1 class="main-title">🌱 HPU Digital Campus - 10 Year Historical
 def generate_10year_shimla_data():
     """Generate realistic 10-year historical data for Shimla"""
     
-    start_date = datetime(2014, 1, 1)
-    dates = [start_date + timedelta(days=i) for i in range(3650)]  # 10 years
+    # Generate last 10 years of data dynamically (always up to current year)
+end_date = datetime.now()
+start_date = datetime(end_date.year - 10, 1, 1)  # Start from Jan 1, 10 years ago
+total_days = (end_date - start_date).days + 1  # Include today
+dates = [start_date + timedelta(days=i) for i in range(total_days)]
     
     data = {
         'date': dates,
@@ -462,7 +465,7 @@ st.markdown("---")
 st.markdown(
     """
     <div style='text-align: center; color: gray; padding: 1rem;'>
-        🌱 HPU Digital Campus - Powered by 10 Years of Shimla Historical Data (2014-2023)<br>
+        🌱 HPU Digital Campus - Powered by 10 Years of Shimla Historical Data ({start_date.year}-{end_date.year})<br>
         Data includes temperature, rainfall, solar energy, and air quality patterns
     </div>
     """,
