@@ -1,4 +1,4 @@
-import streamlit as st
+-import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -464,6 +464,6 @@ st.markdown(
         🌱 HPU Digital Campus - Powered by 10 Years of Shimla Historical Data (2014-2023)<br>
         Data includes temperature, rainfall, solar energy, and air quality patterns
     </div>
-    """
+    """,
 )
     unsafe_allow_html=True
