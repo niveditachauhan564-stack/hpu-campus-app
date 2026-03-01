@@ -766,7 +766,7 @@ elif page == "📈 Analytics":
 # ============================================
 # PAGE 7: SYSTEM ARCHITECTURE
 # ============================================
-else:  # System Architecture
+elif page == "⚙️ System Architecture":
     st.markdown('<p class="main-title">⚙️ System Architecture & Data Flow</p>', unsafe_allow_html=True)
     
     col1, col2 = st.columns([2, 1])
@@ -775,8 +775,7 @@ else:  # System Architecture
         st.subheader("Data Pipeline")
         
         # Create architecture diagram using simple text
-        st.markdown("""
-        ```
+        diagram = """
         ┌─────────┐     ┌──────────┐     ┌───────────┐     ┌────────────┐
         │SketchUp │────▶│OpenStudio│────▶│EnergyPlus │────▶│Streamlit   │
         │3D Model │     │Simulation│     │Calculations│    │Dashboard   │
@@ -786,8 +785,8 @@ else:  # System Architecture
                                                           │   Web App     │
                                                           │   Live URL    │
                                                           └───────────────┘
-        ```
-        """)
+        """
+        st.text(diagram)
         
         st.markdown("---")
         st.subheader("Tools Used")
@@ -806,7 +805,7 @@ else:  # System Architecture
     
     with col2:
         st.subheader("Data Sources")
-        st.markdown("""
+        data_sources = """
         ✅ **Historical Data (2016-2026)**
         • Temperature
         • Solar radiation
@@ -822,11 +821,13 @@ else:  # System Architecture
         • Electricity tariffs
         • Water costs
         • Subsidy rates
-        """)
+        """
+        st.markdown(data_sources)
         
         st.metric("Data Points", "120,000+", "10 years")
         st.metric("Buildings Modeled", "6", "13,500 m² total")
-        # ============================================
+
+# ============================================
 # PAGE 8: LIVE SENSORS
 # ============================================
 elif page == "🔴 Live Sensors":
@@ -958,6 +959,12 @@ elif page == "📅 10-Year Daily Data":
             file_name=f"hpu_daily_data_{start_date}_{end_date}.csv",
             mime="text/csv"
         )
+
+# ============================================
+# IF NO PAGE MATCHES (should never happen)
+# ============================================
+else:
+    st.error("Page not found")
 
 # Footer for all pages
 st.markdown("---")
