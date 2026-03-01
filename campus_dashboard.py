@@ -347,11 +347,12 @@ with st.sidebar:
          "📅 10-Year Daily Data"]      # NEW - Add this line
     )
     
-    st.markdown("---")
+      st.markdown("---")
     st.markdown(f"**Current Time:** {datetime.now().strftime('%H:%M')}")
     st.markdown(f"**Date:** {datetime.now().strftime('%d %b %Y')}")
     st.progress(0.7, "System Health: 70%")
-        st.markdown("---")
+    
+    st.markdown("---")  # ← This should have EXACTLY 4 spaces before it
     st.subheader("🔴 SENSOR STATUS")
     
     # Sensor status indicators
@@ -362,7 +363,6 @@ with st.sidebar:
         "Waste Sensors": "✅ Online" if random.random() > 0.1 else "⚠️ Offline",
         "Thermal Sensors": "✅ Online" if random.random() > 0.1 else "⚠️ Offline"
     }
-    
     for sensor, status in sensor_status.items():
         st.text(f"{sensor}: {status}")
     
