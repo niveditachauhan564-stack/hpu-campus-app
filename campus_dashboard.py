@@ -333,7 +333,7 @@ with st.sidebar:
     st.image("https://img.icons8.com/color/96/000000/himalayas.png")
     st.markdown("## 🏛️ HPU Control Center")
     
-    # Navigation
+        # Navigation
     page = st.radio(
         "Navigate to:",
         ["🏠 Dashboard", 
@@ -342,13 +342,31 @@ with st.sidebar:
          "🔁 Scenario Analysis", 
          "💰 Cost & Sustainability",
          "📈 Analytics",
-         "⚙️ System Architecture"]
+         "⚙️ System Architecture",
+         "🔴 Live Sensors",           # NEW - Add this line
+         "📅 10-Year Daily Data"]      # NEW - Add this line
     )
     
     st.markdown("---")
     st.markdown(f"**Current Time:** {datetime.now().strftime('%H:%M')}")
     st.markdown(f"**Date:** {datetime.now().strftime('%d %b %Y')}")
     st.progress(0.7, "System Health: 70%")
+        st.markdown("---")
+    st.subheader("🔴 SENSOR STATUS")
+    
+    # Sensor status indicators
+    sensor_status = {
+        "Solar Sensors": "✅ Online" if random.random() > 0.1 else "⚠️ Offline",
+        "AQI Sensors": "✅ Online" if random.random() > 0.1 else "⚠️ Offline",
+        "Water Sensors": "✅ Online" if random.random() > 0.1 else "⚠️ Offline",
+        "Waste Sensors": "✅ Online" if random.random() > 0.1 else "⚠️ Offline",
+        "Thermal Sensors": "✅ Online" if random.random() > 0.1 else "⚠️ Offline"
+    }
+    
+    for sensor, status in sensor_status.items():
+        st.text(f"{sensor}: {status}")
+    
+    st.caption(f"Last updated: {datetime.now().strftime('%H:%M:%S')}")
 
 # ============================================
 # PAGE 1: DASHBOARD
@@ -807,6 +825,138 @@ else:  # System Architecture
         
         st.metric("Data Points", "120,000+", "10 years")
         st.metric("Buildings Modeled", "6", "13,500 m² total")
+        # ============================================
+# PAGE 8: LIVE SENSORS
+# ============================================
+elif page == "🔴 Live Sensors":
+    st.markdown('<p class="main-title">🔴 Live Sensor Network</p>', unsafe_allow_html=True)
+    
+    # Get current sensor data
+    current_hour = datetime.now().hour
+    sensor_data = simulate_sensor_data(datetime.now(), current_hour)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("☀️ Solar Sensors")
+        st.metric("Irradiance", f"{sensor_data['solar']['irradiance_w_m2']} W/m²")
+        st.metric("Power Output", f"{sensor_data['solar']['power_kw']} kW")
+        
+        st.subheader("🌫️ Air Quality Sensors")
+        st.metric("PM2.5", f"{sensor_data['air_quality']['pm25']} µg/m³")
+        st.metric("PM10", f"{sensor_data['air_quality']['pm10']} µg/m³")
+        st.metric("CO₂", f"{sensor_data['air_quality']['co2']} ppm")
+        st.caption(f"Status: {sensor_data['air_quality']['aqi_category']}")
+        
+        st.subheader("💧 Water Sensors")
+        st.metric("Flow Rate", f"{sensor_data['water']['flow_rate_lpm']} L/min")
+        st.metric("Tank Level", f"{sensor_data['water']['tank_level_pct']}%")
+        st.progress(sensor_data['water']['tank_level_pct']/100)
+        st.metric("TDS", f"{sensor_data['water']['tds_ppm']} ppm")
+        st.metric("pH", f"{sensor_data['water']['ph']}")
+    
+    with col2:
+        st.subheader("🗑️ Waste Bin Sensors")
+        bin_df = pd.DataFrame([
+            {"Location": k, "Fill Level %": v} 
+            for k, v in sensor_data['waste']['bins'].items()
+        ])
+        st.dataframe(bin_df, use_container_width=True)
+        st.metric("Average Fill", f"{sensor_data['waste']['total_fullness']}%")
+        
+        # Alert if any bin > 90%
+        high_bins = [k for k, v in sensor_data['waste']['bins'].items() if v > 90]
+        if high_bins:
+            st.warning(f"⚠️ Bins needing collection: {', '.join(high_bins)}")
+        
+        st.subheader("🌡️ Thermal Sensors")
+        st.metric("Outdoor Temp", f"{sensor_data['thermal']['outdoor_temp_c']}°C")
+        st.metric("Indoor Temp", f"{sensor_data['thermal']['indoor_temp_c']}°C")
+        st.metric("Temp Difference", f"{sensor_data['thermal']['temp_delta']}°C")
+        st.metric("Humidity", f"{sensor_data['thermal']['humidity_pct']}%")
+        
+        # Insulation indicator
+        if sensor_data['thermal']['temp_delta'] > 15:
+            st.success("✅ Insulation performing well")
+        elif sensor_data['thermal']['temp_delta'] > 10:
+            st.info("ℹ️ Insulation adequate")
+        else:
+            st.warning("⚠️ Insulation could be improved")
+
+# ============================================
+# PAGE 9: 10-YEAR DAILY DATA
+# ============================================
+elif page == "📅 10-Year Daily Data":
+    st.markdown('<p class="main-title">📅 10-Year Daily Historical Data (2016-2026)</p>', unsafe_allow_html=True)
+    
+    # Load daily data
+    daily_df = generate_daily_historical_data()
+    
+    # Date range selector
+    col1, col2 = st.columns(2)
+    with col1:
+        start_date = st.date_input("Start Date", datetime(2016, 1, 1))
+    with col2:
+        end_date = st.date_input("End Date", datetime(2026, 12, 31))
+    
+    # Filter data
+    mask = (pd.to_datetime(daily_df['date']) >= pd.to_datetime(start_date)) & \
+           (pd.to_datetime(daily_df['date']) <= pd.to_datetime(end_date))
+    filtered_df = daily_df[mask]
+    
+    # Parameter selector
+    param = st.selectbox(
+        "Select Parameter",
+        ["Solar Energy (kWh)", "PM2.5", "PM10", "Water Consumption (L)", 
+         "Waste Generation (kg)", "Temperature (°C)", "Heating Demand"]
+    )
+    
+    # Map parameter
+    param_map = {
+        "Solar Energy (kWh)": "solar_kwh",
+        "PM2.5": "pm25",
+        "PM10": "pm10",
+        "Water Consumption (L)": "water_consumption_l",
+        "Waste Generation (kg)": "waste_kg",
+        "Temperature (°C)": "temperature_c",
+        "Heating Demand": "heating_demand"
+    }
+    
+    # Display chart
+    st.subheader(f"Daily {param} from {start_date} to {end_date}")
+    
+    fig = px.line(
+        filtered_df, 
+        x='date', 
+        y=param_map[param],
+        title=f"{param} - Daily Values",
+        labels={'date': 'Date', param_map[param]: param}
+    )
+    fig.update_traces(line_color='#2E7D32')
+    fig.update_layout(xaxis_tickangle=-45)
+    st.plotly_chart(fig, use_container_width=True)
+    
+    # Statistics
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Average", f"{filtered_df[param_map[param]].mean():.1f}")
+    with col2:
+        st.metric("Maximum", f"{filtered_df[param_map[param]].max():.1f}")
+    with col3:
+        st.metric("Minimum", f"{filtered_df[param_map[param]].min():.1f}")
+    
+    # Show raw data
+    if st.checkbox("Show Raw Daily Data"):
+        st.dataframe(filtered_df, use_container_width=True)
+        
+        # Download button
+        csv = filtered_df.to_csv(index=False)
+        st.download_button(
+            label="📥 Download as CSV",
+            data=csv,
+            file_name=f"hpu_daily_data_{start_date}_{end_date}.csv",
+            mime="text/csv"
+        )
 
 # Footer for all pages
 st.markdown("---")
