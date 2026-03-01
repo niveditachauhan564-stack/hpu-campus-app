@@ -67,7 +67,145 @@ st.markdown("""
 # ============================================
 # SIMULATION DATA GENERATION
 # ============================================
+# ============================================
+# SENSOR DATA SIMULATION FUNCTIONS
+# ============================================
 
+def simulate_sensor_data(date, hour):
+    """Generate realistic sensor data for all 5 systems"""
+    
+    # Solar Energy Sensor (W/m²)
+    if 6 <= hour <= 18:
+        solar_irradiance = 800 * np.sin((hour-6)/12 * np.pi) * random.uniform(0.8, 1.2)
+        solar_power = solar_irradiance * 0.2 * random.uniform(0.9, 1.1)
+    else:
+        solar_irradiance = 0
+        solar_power = 0
+    
+    # Air Quality Sensors
+    base_aqi = 45 + 30 * np.sin((date.month-1)/11 * np.pi)
+    pm25 = base_aqi * random.uniform(0.7, 1.3)
+    pm10 = pm25 * 1.5 * random.uniform(0.8, 1.2)
+    co2 = 400 + 200 * random.uniform(0.5, 1.5)
+    
+    # Water Sensors
+    water_flow = random.uniform(50, 200)
+    tank_level = random.uniform(40, 95)
+    water_tds = random.uniform(50, 150)
+    water_ph = random.uniform(6.5, 8.5)
+    
+    # Waste Sensors
+    bin_levels = {
+        'Academic Block': random.uniform(20, 95),
+        'Hostel A': random.uniform(30, 98),
+        'Hostel B': random.uniform(30, 98),
+        'Hostel C': random.uniform(30, 98),
+        'Cafeteria': random.uniform(40, 99),
+        'Support Complex': random.uniform(25, 90)
+    }
+    
+    # Thermal Sensors
+    outdoor_temp = 5 + 15 * np.sin((date.month-1)/11 * np.pi) + random.uniform(-3, 3)
+    indoor_temp = outdoor_temp + 10 * random.uniform(0.8, 1.2)
+    humidity = 40 + 30 * random.uniform(0.5, 1.5)
+    
+    return {
+        'timestamp': f"{date.date()} {hour}:00",
+        'solar': {
+            'irradiance_w_m2': round(solar_irradiance, 1),
+            'power_kw': round(solar_power, 1),
+        },
+        'air_quality': {
+            'pm25': round(pm25, 1),
+            'pm10': round(pm10, 1),
+            'co2': round(co2, 1),
+            'aqi_category': 'Good' if pm25 < 50 else 'Moderate' if pm25 < 100 else 'Poor'
+        },
+        'water': {
+            'flow_rate_lpm': round(water_flow, 1),
+            'tank_level_pct': round(tank_level, 1),
+            'tds_ppm': round(water_tds, 1),
+            'ph': round(water_ph, 1)
+        },
+        'waste': {
+            'bins': {k: round(v, 1) for k, v in bin_levels.items()},
+            'total_fullness': round(sum(bin_levels.values())/len(bin_levels), 1)
+        },
+        'thermal': {
+            'outdoor_temp_c': round(outdoor_temp, 1),
+            'indoor_temp_c': round(indoor_temp, 1),
+            'humidity_pct': round(humidity, 1),
+            'temp_delta': round(indoor_temp - outdoor_temp, 1)
+        }
+    }
+
+# ============================================
+# DAILY HISTORICAL DATA GENERATOR
+# ============================================
+
+@st.cache_data
+def generate_daily_historical_data():
+    """Generate 10 years of daily data (3650 days)"""
+    
+    start_date = datetime(2016, 1, 1)
+    dates = [start_date + timedelta(days=i) for i in range(3650)]
+    
+    daily_data = []
+    
+    for date in dates:
+        month = date.month
+        year = date.year
+        
+        # Solar
+        if 3 <= month <= 5:
+            solar = random.uniform(800, 1200)
+        elif 6 <= month <= 9:
+            solar = random.uniform(300, 600)
+        elif 10 <= month <= 11:
+            solar = random.uniform(500, 800)
+        else:
+            solar = random.uniform(400, 700)
+        solar *= (1 + (year-2016) * 0.01)
+        
+        # Air Quality
+        if month in [12, 1, 2]:
+            aqi_base = 80
+        elif month in [6, 7, 8, 9]:
+            aqi_base = 40
+        else:
+            aqi_base = 55
+        pm25 = aqi_base * random.uniform(0.7, 1.3)
+        pm10 = pm25 * 1.6
+        
+        # Water & Waste
+        water_consumption = 3500 * 150 * random.uniform(0.8, 1.2)
+        waste = 3500 * 0.4 * random.uniform(0.9, 1.1)
+        
+        # Temperature
+        if month in [12, 1, 2]:
+            temp = random.uniform(2, 8)
+        elif month in [3, 4, 5]:
+            temp = random.uniform(12, 20)
+        elif month in [6, 7, 8, 9]:
+            temp = random.uniform(18, 24)
+        else:
+            temp = random.uniform(8, 15)
+        
+        daily_data.append({
+            'date': date.strftime('%Y-%m-%d'),
+            'year': year,
+            'month': month,
+            'day': date.day,
+            'solar_kwh': round(solar, 1),
+            'pm25': round(pm25, 1),
+            'pm10': round(pm10, 1),
+            'water_consumption_l': round(water_consumption, 0),
+            'waste_kg': round(waste, 1),
+            'temperature_c': round(temp, 1),
+            'heating_demand': round(random.uniform(500, 2000), 1)
+        })
+    
+    return pd.DataFrame(daily_data)
 @st.cache_data
 def generate_campus_data():
     """Generate realistic campus data for all blocks"""
