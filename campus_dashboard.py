@@ -350,24 +350,24 @@ with st.sidebar:
     st.markdown("## 🏛️ HPU Control Center")
     
     # Navigation
-   page = st.radio(
-    "Navigate to:",
-    ["🏠 Dashboard", 
-     "📊 Simulation Results", 
-     "🏢 Digital Twin", 
-     "🔁 Scenario Analysis", 
-     "💰 Cost & Sustainability",
-     "📈 Analytics",
-     "⚙️ System Architecture",
-     "🔴 Live Sensors",
-     "📅 10-Year Daily Data",
-     "📊 What-If Scenario"]   # ← NEW
-)
+    page = st.radio(
+        "Navigate to:",
+        ["🏠 Dashboard", 
+         "📊 Simulation Results", 
+         "🏢 Digital Twin", 
+         "🔁 Scenario Analysis", 
+         "💰 Cost & Sustainability",
+         "📈 Analytics",
+         "⚙️ System Architecture",
+         "🔴 Live Sensors",
+         "📅 10-Year Daily Data",
+         "📊 What-If Scenario"]
+    )
     
     st.markdown("---")
     st.markdown(f"**Current Time:** {datetime.now().strftime('%H:%M')}")
     st.markdown(f"**Date:** {datetime.now().strftime('%d %b %Y')}")
-    st.progress(0.7, "System Health: 70%")
+    st.progress(0.7, "System Health: 70%")   st.progress(0.7, "System Health: 70%")
     
     st.markdown("---")
     st.subheader("🔴 SENSOR STATUS")
