@@ -367,7 +367,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown(f"**Current Time:** {datetime.now().strftime('%H:%M')}")
     st.markdown(f"**Date:** {datetime.now().strftime('%d %b %Y')}")
-    st.progress(0.7, "System Health: 70%")   st.progress(0.7, "System Health: 70%")
+    st.progress(0.7, "System Health: 70%")  
     
     st.markdown("---")
     st.subheader("🔴 SENSOR STATUS")
