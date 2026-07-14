@@ -6,6 +6,22 @@ import plotly.express as px
 from datetime import datetime, timedelta
 import random
 
+# ============================================
+# GOOGLE SHEETS CONFIG
+# ============================================
+SHEET_ID = "1R5EJ-ukTg5KbEfc6Lt7cVYXyPsGRmGatwWWTNKmu2Y4"
+SHEET_NAME = "Sheet1"
+
+GSHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_NAME}"
+
+@st.cache_data(ttl=10)
+def load_sensor_data():
+    try:
+        df = pd.read_csv(GSHEET_URL)
+        return df
+    except Exception as e:
+        return None
+
 # Page config
 st.set_page_config(
     page_title="HPU Digital Campus - Smart Control Center",
