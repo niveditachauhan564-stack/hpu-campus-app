@@ -847,60 +847,61 @@ elif page == "⚙️ System Architecture":
 # PAGE 8: LIVE SENSORS
 # ============================================
 elif page == "🔴 Live Sensors":
-    st.markdown('<p class="main-title">🔴 Live Sensor Network</p>', unsafe_allow_html=True)
+    st.markdown('<p class="main-title">🔴 Live Sensor Data (Google Sheets)</p>', unsafe_allow_html=True)
     
-    # Get current sensor data
-    current_hour = datetime.now().hour
-    sensor_data = simulate_sensor_data(datetime.now(), current_hour)
+    df = load_sensor_data()
     
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.subheader("☀️ Solar Sensors")
-        st.metric("Irradiance", f"{sensor_data['solar']['irradiance_w_m2']} W/m²")
-        st.metric("Power Output", f"{sensor_data['solar']['power_kw']} kW")
+    if df is not None and not df.empty:
+        # Latest reading
+        last = df.iloc[-1]
         
-        st.subheader("🌫️ Air Quality Sensors")
-        st.metric("PM2.5", f"{sensor_data['air_quality']['pm25']} µg/m³")
-        st.metric("PM10", f"{sensor_data['air_quality']['pm10']} µg/m³")
-        st.metric("CO₂", f"{sensor_data['air_quality']['co2']} ppm")
-        st.caption(f"Status: {sensor_data['air_quality']['aqi_category']}")
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("🌡️ Temperature", f"{last['Temperature (°C)']} °C")
+        col2.metric("💧 Humidity", f"{last['Humidity (%)']} %")
+        col3.metric("📏 Distance", f"{last['Distance (cm)']} cm")
+        col4.metric("🧪 Gas Level", f"{last['Gas Level']}")
         
-        st.subheader("💧 Water Sensors")
-        st.metric("Flow Rate", f"{sensor_data['water']['flow_rate_lpm']} L/min")
-        st.metric("Tank Level", f"{sensor_data['water']['tank_level_pct']}%")
-        st.progress(sensor_data['water']['tank_level_pct']/100)
-        st.metric("TDS", f"{sensor_data['water']['tds_ppm']} ppm")
-        st.metric("pH", f"{sensor_data['water']['ph']}")
-    
-    with col2:
-        st.subheader("🗑️ Waste Bin Sensors")
-        bin_df = pd.DataFrame([
-            {"Location": k, "Fill Level %": v} 
-            for k, v in sensor_data['waste']['bins'].items()
-        ])
-        st.dataframe(bin_df, use_container_width=True)
-        st.metric("Average Fill", f"{sensor_data['waste']['total_fullness']}%")
+        # Historical chart
+        st.subheader("📊 Historical Data")
+        df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+        st.line_chart(df.set_index('Timestamp')[['Temperature (°C)', 'Humidity (%)']])
         
-        # Alert if any bin > 90%
-        high_bins = [k for k, v in sensor_data['waste']['bins'].items() if v > 90]
-        if high_bins:
-            st.warning(f"⚠️ Bins needing collection: {', '.join(high_bins)}")
+        # Alerts
+        st.subheader("🚨 Alerts")
+        alerts = []
         
-        st.subheader("🌡️ Thermal Sensors")
-        st.metric("Outdoor Temp", f"{sensor_data['thermal']['outdoor_temp_c']}°C")
-        st.metric("Indoor Temp", f"{sensor_data['thermal']['indoor_temp_c']}°C")
-        st.metric("Temp Difference", f"{sensor_data['thermal']['temp_delta']}°C")
-        st.metric("Humidity", f"{sensor_data['thermal']['humidity_pct']}%")
+        temp = float(last['Temperature (°C)'])
+        if temp > 30:
+            alerts.append("⚠️ **High Temperature** > 30°C")
+        if temp < 10:
+            alerts.append("⚠️ **Low Temperature** < 10°C")
         
-        # Insulation indicator
-        if sensor_data['thermal']['temp_delta'] > 15:
-            st.success("✅ Insulation performing well")
-        elif sensor_data['thermal']['temp_delta'] > 10:
-            st.info("ℹ️ Insulation adequate")
+        hum = float(last['Humidity (%)'])
+        if hum > 80:
+            alerts.append("⚠️ **High Humidity** > 80%")
+        if hum < 30:
+            alerts.append("⚠️ **Low Humidity** < 30%")
+        
+        dist = float(last['Distance (cm)'])
+        if dist < 10:
+            alerts.append("⚠️ **Tank/Bin Full** (Distance < 10cm)")
+        if dist > 200:
+            alerts.append("⚠️ **Tank/Bin Empty** (Distance > 200cm)")
+        
+        gas = float(last['Gas Level'])
+        if gas > 2000:
+            alerts.append("⚠️ **High Gas Level** > 2000")
+        
+        if alerts:
+            for alert in alerts:
+                st.error(alert)
         else:
-            st.warning("⚠️ Insulation could be improved")
-
+            st.success("✅ All parameters are within normal range.")
+        
+        if st.checkbox("Show Raw Data"):
+            st.dataframe(df.tail(20))
+    else:
+        st.warning("No data available. Make sure the Python script is running.")
 # ============================================
 # PAGE 9: 10-YEAR DAILY DATA
 # ============================================
