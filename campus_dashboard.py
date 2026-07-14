@@ -350,18 +350,19 @@ with st.sidebar:
     st.markdown("## 🏛️ HPU Control Center")
     
     # Navigation
-    page = st.radio(
-        "Navigate to:",
-        ["🏠 Dashboard", 
-         "📊 Simulation Results", 
-         "🏢 Digital Twin", 
-         "🔁 Scenario Analysis", 
-         "💰 Cost & Sustainability",
-         "📈 Analytics",
-         "⚙️ System Architecture",
-         "🔴 Live Sensors",
-         "📅 10-Year Daily Data"]
-    )
+   page = st.radio(
+    "Navigate to:",
+    ["🏠 Dashboard", 
+     "📊 Simulation Results", 
+     "🏢 Digital Twin", 
+     "🔁 Scenario Analysis", 
+     "💰 Cost & Sustainability",
+     "📈 Analytics",
+     "⚙️ System Architecture",
+     "🔴 Live Sensors",
+     "📅 10-Year Daily Data",
+     "📊 What-If Scenario"]   # ← NEW
+)
     
     st.markdown("---")
     st.markdown(f"**Current Time:** {datetime.now().strftime('%H:%M')}")
@@ -977,6 +978,125 @@ elif page == "📅 10-Year Daily Data":
             mime="text/csv"
         )
 
+# ============================================
+# WHAT-IF SCENARIO PAGE
+# ============================================
+elif page == "📊 What-If Scenario":
+    st.markdown('<p class="main-title">📊 What-If Scenario Engine</p>', unsafe_allow_html=True)
+    
+    st.markdown("Adjust the parameters below to see how they affect campus energy consumption.")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("⚙️ Adjust Parameters")
+        
+        insulation = st.select_slider(
+            "🧱 Insulation Level",
+            options=["Poor", "Standard", "Good", "Excellent"],
+            value="Standard"
+        )
+        
+        window_type = st.select_slider(
+            "🪟 Window Type",
+            options=["Single", "Double", "Triple"],
+            value="Double"
+        )
+        
+        solar_area = st.slider(
+            "☀️ Solar Panel Area (m²)",
+            0, 10000, 2000, step=100
+        )
+        
+        occupancy = st.slider(
+            "👥 Occupancy Level (%)",
+            0, 100, 70, step=5
+        )
+        
+        hvac_efficiency = st.slider(
+            "❄️ HVAC Efficiency (COP)",
+            2.0, 5.0, 3.5, step=0.1
+        )
+        
+        lighting = st.radio(
+            "💡 Lighting Type",
+            ["Conventional", "LED"],
+            horizontal=True
+        )
+        
+        analyze = st.button("🔮 Run Scenario", type="primary", use_container_width=True)
+    
+    with col2:
+        st.subheader("📊 Results")
+        
+        if analyze:
+            # Base energy: 15,000 kWh/day
+            base_energy = 15000
+            
+            # Insulation factors
+            insulation_factors = {
+                "Poor": 1.0,
+                "Standard": 0.90,
+                "Good": 0.80,
+                "Excellent": 0.70
+            }
+            
+            # Window factors
+            window_factors = {
+                "Single": 1.0,
+                "Double": 0.85,
+                "Triple": 0.75
+            }
+            
+            # Lighting factor
+            lighting_factor = 0.85 if lighting == "LED" else 1.0
+            
+            # Calculate energy
+            energy = base_energy
+            energy *= insulation_factors[insulation]
+            energy *= window_factors[window_type]
+            energy *= lighting_factor
+            energy *= (0.8 + 0.4 * occupancy / 100)
+            energy *= (3.5 / hvac_efficiency)
+            
+            # Solar offset: 150 kWh/year per m²
+            solar_offset = solar_area * 150 / 365
+            energy = max(5000, energy - solar_offset)
+            
+            # Calculate savings
+            savings = (base_energy - energy) * 365 * 6 / 100000
+            co2_saved = (base_energy - energy) * 365 * 0.8 / 1000
+            
+            # Display results
+            col_a, col_b = st.columns(2)
+            with col_a:
+                st.metric("⚡ Daily Energy", f"{energy:.0f} kWh", f"{((energy/base_energy)-1)*100:.1f}%")
+                st.metric("💰 Annual Savings", f"₹{savings:.1f} Lakhs")
+            with col_b:
+                st.metric("🌲 CO₂ Reduction", f"{co2_saved:.0f} tons/year")
+                st.metric("💡 Efficiency Gain", f"{((base_energy-energy)/base_energy*100):.1f}%")
+            
+            # Chart comparison
+            st.subheader("📊 Energy Comparison")
+            
+            comparison_data = pd.DataFrame({
+                'Scenario': ['Current', 'Optimized'],
+                'Energy (kWh/day)': [base_energy, energy]
+            })
+            
+            st.bar_chart(comparison_data.set_index('Scenario'))
+            
+            if solar_area > 0:
+                solar_cost = solar_area * 45000 * 0.7 / 100000
+                if savings > 0:
+                    payback = solar_cost / savings
+                    st.metric("⏱️ Solar Payback", f"{payback:.1f} years")
+                else:
+                    st.info("Solar payback: No savings to calculate")
+            else:
+                st.info("Add solar panels to see payback calculation")
+        else:
+            st.info("👆 Adjust parameters and click 'Run Scenario'")
 # ============================================
 # IF NO PAGE MATCHES (should never happen)
 # ============================================
